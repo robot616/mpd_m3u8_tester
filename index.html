@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css">
 
     <style>
-        /* التنسيق الأساسي والأبعاد المريحة */
         body {
             margin: 0; padding: 0; background: #181818; color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,7 +24,6 @@
         }
         .header h1 { margin: 0; font-size: 22px; color: #1dcf60; }
         
-        /* المربع العلوي بنفس الأبعاد والتقفيلة القديمة بالظبط */
         .controls-container {
             padding: 20px; background: #222; display: flex; flex-direction: column; gap: 15px;
             width: 95%; max-width: 1000px; margin: 20px auto 0;
@@ -55,41 +53,39 @@
         }
         input[type="text"]:focus, select:focus { border-color: #1dcf60; }
         
-        /* فصلنا الأزرار عن العدادات للحفاظ على الأبعاد القديمة */
-        .actions-wrapper {
-            display: flex; flex-direction: column; gap: 12px; width: 100%;
+        /* السطر الواحد المجمع للأزرار والعدادات */
+        .action-row {
+            display: flex; gap: 10px; width: 100%;
+            align-items: center; justify-content: space-between;
         }
         
-        .main-buttons-row {
-            display: flex; gap: 10px; width: 100%;
+        .buttons-group {
+            display: flex; gap: 8px; align-items: center;
         }
         button.play-btn {
-            padding: 12px 20px; background: #1dcf60; color: #000; border: none; flex: 3;
-            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 8px 16px; background: #1dcf60; color: #000; border: none;
+            border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         button.play-btn:hover { background: #17a84e; }
         button.clear-btn {
-            padding: 12px 20px; background: #ff4d4d; color: #fff; border: none; flex: 1;
-            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 8px 16px; background: #ff4d4d; color: #fff; border: none;
+            border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         button.clear-btn:hover { background: #cc0000; }
 
-        .counters-and-copy-row {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
-        }
         .counters-container {
-            display: flex; gap: 8px; flex-wrap: wrap;
+            display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
         }
         .counter-badge {
-            background: #222; border: 1px solid #333; padding: 6px 10px; 
-            border-radius: 6px; font-size: 12px; font-weight: bold; 
-            display: flex; align-items: center; gap: 6px;
+            background: #222; border: 1px solid #333; padding: 4px 8px; 
+            border-radius: 6px; font-size: 11px; font-weight: bold; 
+            display: flex; align-items: center; gap: 4px;
             cursor: pointer; opacity: 0.5; transition: all 0.2s;
         }
         .counter-badge:hover { opacity: 0.8; }
-        .counter-badge.active { opacity: 1; transform: scale(1.05); border-width: 2px; }
+        .counter-badge.active { opacity: 1; border-width: 2px; }
         
-        .counter-badge span.count { padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; }
+        .counter-badge span.count { padding: 2px 5px; border-radius: 4px; font-size: 10px; color: #fff; }
         .counter-all { border-color: #1dcf60; color: #1dcf60; }
         .counter-all span.count { background: #1dcf60; color: #000; }
         .counter-mpd { border-color: #e74c3c; color: #e74c3c; }
@@ -99,14 +95,13 @@
         .counter-ts { border-color: #f1c40f; color: #f1c40f; }
         .counter-ts span.count { background: #f1c40f; color: #000; }
 
-        /* زر نسخ الكل أقصى اليسار في المساحة الفارغة */
         .copy-all-btn {
-            background: #343c4a; color: #fff; padding: 8px 15px;
+            background: #343c4a; color: #fff; padding: 6px 10px;
             border: 1px solid #475569; border-radius: 6px;
             cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
         .copy-all-btn:hover { background: #1dcf60; color: #000; border-color: #1dcf60; }
-        .copy-all-btn svg { width: 16px; height: 16px; }
+        .copy-all-btn svg { width: 14px; height: 14px; }
 
         /* المحتوى الأساسي (المشغل والقائمة) */
         .main-content {
@@ -165,7 +160,9 @@
         @media (max-width: 768px) {
             .main-content { flex-direction: column; }
             .player-wrapper, .playlist-box { width: 100%; flex: none; }
-            .counters-and-copy-row { flex-direction: column; gap: 10px; align-items: center; }
+            .action-row { flex-direction: column; gap: 10px; align-items: stretch; }
+            .buttons-group { justify-content: center; }
+            .counters-container { justify-content: center; }
         }
     </style>
 </head>
@@ -191,21 +188,18 @@
             </select>
         </div>
 
-        <div class="actions-wrapper">
-            <!-- صف الأزرار الرئيسية كما كان بالضبط -->
-            <div class="main-buttons-row">
+        <!-- سطر واحد للأزرار والعدادات -->
+        <div class="action-row">
+            <div class="buttons-group">
                 <button class="play-btn" onclick="testStream()">تشغيل القناة المحددة ▶</button>
                 <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
             </div>
             
-            <!-- صف العدادات مع زر النسخ في المساحة الفارغة أقصى اليسار -->
-            <div class="counters-and-copy-row">
-                <div class="counters-container">
-                    <div id="badge-all" class="counter-badge counter-all active" onclick="filterByFormat('all')">الكل <span class="count" id="count-all">0</span></div>
-                    <div id="badge-mpd" class="counter-badge counter-mpd" onclick="filterByFormat('mpd')">MPD <span class="count" id="count-mpd">0</span></div>
-                    <div id="badge-m3u8" class="counter-badge counter-m3u8" onclick="filterByFormat('m3u8')">M3U8 <span class="count" id="count-m3u8">0</span></div>
-                    <div id="badge-ts" class="counter-badge counter-ts" onclick="filterByFormat('ts')">TS <span class="count" id="count-ts">0</span></div>
-                </div>
+            <div class="counters-container">
+                <div id="badge-all" class="counter-badge counter-all active" onclick="filterByFormat('all')">الكل <span class="count" id="count-all">0</span></div>
+                <div id="badge-mpd" class="counter-badge counter-mpd" onclick="filterByFormat('mpd')">MPD <span class="count" id="count-mpd">0</span></div>
+                <div id="badge-m3u8" class="counter-badge counter-m3u8" onclick="filterByFormat('m3u8')">M3U8 <span class="count" id="count-m3u8">0</span></div>
+                <div id="badge-ts" class="counter-badge counter-ts" onclick="filterByFormat('ts')">TS <span class="count" id="count-ts">0</span></div>
                 
                 <button class="copy-all-btn" onclick="copyAllChannels()" title="نسخ أكواد جميع القنوات المستخرجة">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
