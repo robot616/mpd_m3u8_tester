@@ -26,7 +26,7 @@
         }
         .header h1 { margin: 0; font-size: 22px; color: #1dcf60; }
         
-        /* المربع العلوي: ثابت بنفس الأبعاد والتقفيلة (محمي من الانضغاط) */
+        /* المربع العلوي: ثابت بنفس الأبعاد والتقفيلة القديمة (محمي من الانضغاط) */
         .controls-container {
             padding: 20px; background: #222; display: flex; flex-direction: column; gap: 15px;
             width: 95%; max-width: 1000px; margin: 15px auto; flex-shrink: 0;
@@ -158,7 +158,7 @@
         }
         .toast-show { opacity: 1 !important; }
 
-        /* إخفاء الأزرار غير الضرورية من JW Player فقط (مع ترك زرار الشاشة الكاملة يعمل بشكل طبيعي) */
+        /* إخفاء الأزرار غير الضرورية من JW Player فقط */
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
 
         @media (max-width: 768px) {
@@ -192,7 +192,6 @@
             </select>
         </div>
 
-        <!-- السطر الواحد الذي يحتوي على كل شيء -->
         <div class="action-row">
             <div class="buttons-group">
                 <button class="play-btn" onclick="testStream()">تشغيل القناة المحددة ▶</button>
@@ -205,7 +204,6 @@
                 <div id="badge-m3u8" class="counter-badge counter-m3u8" onclick="filterByFormat('m3u8')">M3U8 <span class="count" id="count-m3u8">0</span></div>
                 <div id="badge-ts" class="counter-badge counter-ts" onclick="filterByFormat('ts')">TS <span class="count" id="count-ts">0</span></div>
                 
-                <!-- زر النسخ أقصى الشمال في نفس السطر -->
                 <button class="copy-all-btn" onclick="copyAllChannels()" title="نسخ أكواد جميع القنوات المستخرجة">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </button>
@@ -237,7 +235,6 @@
             setTimeout(() => { toast.classList.remove('toast-show'); }, 2000);
         }
 
-        // نسخ كود الإضافة
         function copyExtCode(idx, event) {
             event.stopPropagation();
             const ch = extractedChannels[idx];
@@ -253,7 +250,6 @@
             });
         }
 
-        // نسخ الرابط المباشر
         function copyLink(idx, event) {
             event.stopPropagation();
             const ch = extractedChannels[idx];
@@ -262,7 +258,6 @@
             });
         }
 
-        // نسخ جميع القنوات
         function copyAllChannels() {
             if (extractedChannels.length === 0) {
                 showToast('لا توجد قنوات لنسخها!');
@@ -535,30 +530,42 @@
                     file: url,
                     type: url.indexOf('.m3u8') !== -1 || url.indexOf('.ts') !== -1 ? 'hls' : 'dash',
                     width: "100%", height: "100%", autostart: true, 
-                    stretching: "uniform" /* هذه الخاصية تضمن بقاء الصورة بأبعادها الأصلية داخل مساحة البلاير */
+                    stretching: "uniform" 
                 };
 
                 if (k1 && k2) { setupConfig.drm = { clearkey: { keyId: k1, key: k2 } }; }
 
                 const playerInstance = jwplayer("jw-player").setup(setupConfig);
                 
-                /* تم الإبقاء على زر التوسيع في حال أردت التبديل بين الأبعاد الطبيعية والتعبئة الكاملة */
                 playerInstance.on('ready', function() {
                     let isStretched = false;
-                    const diagonalCutArrow = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgMTBsNy03bS02IDBoNnY2bS0xMSA1bC03IDdtNiAwSDN2LTYiLz48L3N2Zz4=";
-                    playerInstance.addButton(
-                        diagonalCutArrow, "توسيع/تضييق الصورة", 
-                        function() {
-                            if (!isStretched) { playerInstance.setConfig({ stretching: "exactfit" }); isStretched = true; } 
-                            else { playerInstance.setConfig({ stretching: "uniform" }); isStretched = false; }
-                        }, "stretch-button"
-                    );
+                    
+                    // الأيقونات بصيغة base64
+                    const dashedSquare = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ij48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0Pjwvc3ZnPg==";
+                    const solidSquare = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48L3N2Zz4=";
+
+                    function toggleStretch() {
+                        isStretched = !isStretched;
+                        playerInstance.setConfig({ stretching: isStretched ? "exactfit" : "uniform" });
+                        updateBtn();
+                    }
+
+                    function updateBtn() {
+                        try { playerInstance.removeButton("stretch-button"); } catch(e) {}
+                        playerInstance.addButton(
+                            isStretched ? solidSquare : dashedSquare, 
+                            "توسيع/تضييق الصورة", 
+                            toggleStretch, 
+                            "stretch-button"
+                        );
+                    }
+
+                    updateBtn();
                 });
 
             } else if (playerType === 'shaka') {
                 container.innerHTML = `
                     <div id="shaka-ui-container" dir="ltr" style="width: 100%; height: 100%; position: relative;">
-                        <!-- object-fit: contain تحافظ على أبعاد الفيديو في Shaka Player بدون مطط -->
                         <video id="shaka-video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
                     </div>
                 `;
