@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أداة فحص وبلايليست قنوات MPD / M3U8</title>
     
-    <!-- مكتبة JW Player -->
     <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
     
-    <!-- مكتبات Shaka Player والـ UI الخاص به -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css">
 
@@ -158,7 +156,7 @@
         }
         .toast-show { opacity: 1 !important; }
 
-        /* إخفاء الأزرار غير الضرورية من JW Player فقط */
+        /* إخفاء الأزرار غير الضرورية من JW Player فقط (مع ترك زرار الشاشة الكاملة يعمل بشكل طبيعي) */
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
 
         @media (max-width: 768px) {
@@ -539,28 +537,15 @@
                 
                 playerInstance.on('ready', function() {
                     let isStretched = false;
+                    const diagonalCutArrow = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgMTBsNy03bS02IDBoNnY2bS0xMSA1bC03IDdtNiAwSDN2LTYiLz48L3N2Zz4=";
                     
-                    // الأيقونات بصيغة base64
-                    const dashedSquare = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ij48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0Pjwvc3ZnPg==";
-                    const solidSquare = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48L3N2Zz4=";
-
-                    function toggleStretch() {
-                        isStretched = !isStretched;
-                        playerInstance.setConfig({ stretching: isStretched ? "exactfit" : "uniform" });
-                        updateBtn();
-                    }
-
-                    function updateBtn() {
-                        try { playerInstance.removeButton("stretch-button"); } catch(e) {}
-                        playerInstance.addButton(
-                            isStretched ? solidSquare : dashedSquare, 
-                            "توسيع/تضييق الصورة", 
-                            toggleStretch, 
-                            "stretch-button"
-                        );
-                    }
-
-                    updateBtn();
+                    playerInstance.addButton(
+                        diagonalCutArrow, "توسيع/تضييق الصورة", 
+                        function() {
+                            if (!isStretched) { playerInstance.setConfig({ stretching: "exactfit" }); isStretched = true; } 
+                            else { playerInstance.setConfig({ stretching: "uniform" }); isStretched = false; }
+                        }, "stretch-button"
+                    );
                 });
 
             } else if (playerType === 'shaka') {
