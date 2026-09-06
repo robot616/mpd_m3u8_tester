@@ -13,78 +13,85 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css">
 
     <style>
+        /* التنسيق العام */
         body {
-            margin: 0; padding: 0; background: #0f0f0f; color: #fff;
+            margin: 0; padding: 0; background: #121212; color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
-        .header {
-            background: #181818; padding: 8px; border-bottom: 2px solid #1dcf60;
-            text-align: center; flex-shrink: 0;
-        }
-        .header h1 { margin: 0; font-size: 18px; color: #1dcf60; }
         
+        .header {
+            background: #1a1a1a; padding: 12px; border-bottom: 2px solid #1dcf60;
+            text-align: center; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .header h1 { margin: 0; font-size: 18px; color: #1dcf60; font-weight: bold; letter-spacing: 0.5px; }
+        
+        /* القسم العلوي (التحكم) */
         .controls-container {
-            padding: 10px 20px; background: #222; display: flex; flex-direction: column; gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); align-items: center; width: 100%; box-sizing: border-box;
-            flex-shrink: 0;
+            padding: 15px 20px; background: #1e1e1e; display: flex; flex-direction: column; gap: 12px;
+            width: 100%; box-sizing: border-box; flex-shrink: 0; border-bottom: 1px solid #2a2a2a;
         }
-        .auto-extract-box { width: 100%; max-width: 100%; display: flex; flex-direction: column; gap: 6px; }
+        
+        .auto-extract-box { width: 100%; display: flex; flex-direction: column; gap: 8px; }
         .auto-extract-box textarea {
-            width: 100%; height: 60px; padding: 8px; background: #1a2a20; border: 1px dashed #1dcf60; color: #fff;
-            border-radius: 6px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;
+            width: 100%; height: 70px; padding: 10px; background: #252525; border: 1px dashed #1dcf60; 
+            color: #fff; border-radius: 6px; font-size: 13px; outline: none; resize: vertical; 
+            box-sizing: border-box; transition: background 0.3s;
         }
-        .auto-extract-box textarea::placeholder { color: #88c79c; }
+        .auto-extract-box textarea:focus { background: #2a2a2a; }
+        .auto-extract-box textarea::placeholder { color: #6b9e7b; }
 
         .extract-action-btn {
-            padding: 8px; background: #0084ff; color: #fff; border: none; font-weight: bold;
-            border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;
+            padding: 10px; background: #007bff; color: #fff; border: none; font-weight: bold;
+            border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px; letter-spacing: 0.5px;
         }
-        .extract-action-btn:hover { background: #006bd6; }
+        .extract-action-btn:hover { background: #0056b3; }
         
         .manual-inputs {
-            display: flex; flex-wrap: wrap; gap: 8px; width: 100%; max-width: 100%; align-items: center;
+            display: flex; flex-wrap: wrap; gap: 8px; width: 100%; align-items: center;
         }
         input[type="text"], select {
-            padding: 8px; background: #111; border: 1px solid #444; color: #fff;
+            padding: 10px; background: #252525; border: 1px solid #333; color: #fff;
             border-radius: 6px; font-size: 13px; outline: none; flex: 1; min-width: 150px;
+            transition: border-color 0.3s;
         }
         input[type="text"]:focus, select:focus { border-color: #1dcf60; }
         
-        /* -------- شريط الأزرار والعدادات -------- */
+        /* شريط الأزرار والعدادات */
         .action-row {
-            display: flex; gap: 10px; width: 100%; max-width: 100%;
+            display: flex; gap: 12px; width: 100%;
             align-items: center; flex-wrap: wrap; justify-content: space-between;
         }
         
         .buttons-group {
-            display: flex; gap: 8px; flex: 1; min-width: 200px;
+            display: flex; gap: 8px; flex: 1; min-width: 250px;
         }
         button.play-btn {
-            padding: 8px 15px; background: #1dcf60; color: #000; border: none; flex: 3;
+            padding: 10px 15px; background: #1dcf60; color: #000; border: none; flex: 3;
             border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        button.play-btn:hover { background: #17a84e; }
+        button.play-btn:hover { background: #15a04a; }
         button.clear-btn {
-            padding: 8px 15px; background: #ff4d4d; color: #fff; border: none; flex: 1;
+            padding: 10px 15px; background: #e74c3c; color: #fff; border: none; flex: 1;
             border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        button.clear-btn:hover { background: #cc0000; }
+        button.clear-btn:hover { background: #c0392b; }
 
         .counters-container {
-            display: flex; gap: 6px; justify-content: flex-start; align-items: center; flex-wrap: wrap; margin: 0; flex: 1.5;
+            display: flex; gap: 8px; justify-content: flex-start; align-items: center; flex-wrap: wrap; flex: 1.5;
         }
         .counter-badge {
-            background: #222; border: 1px solid #333; padding: 4px 8px; 
+            background: #252525; border: 1px solid #333; padding: 5px 10px; 
             border-radius: 6px; font-size: 11px; font-weight: bold; 
-            display: flex; align-items: center; gap: 4px;
-            cursor: pointer; opacity: 0.5; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+            cursor: pointer; opacity: 0.6; transition: all 0.2s;
         }
-        .counter-badge:hover { opacity: 0.8; }
-        .counter-badge.active { opacity: 1; transform: scale(1.05); border-width: 2px; }
+        .counter-badge:hover { opacity: 0.9; background: #2a2a2a; }
+        .counter-badge.active { opacity: 1; transform: scale(1.03); border-width: 2px; }
         
         .counter-badge span.count {
-            padding: 2px 5px; border-radius: 4px; font-size: 10px; color: #fff;
+            padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; font-weight: bold;
         }
         .counter-all { border-color: #1dcf60; color: #1dcf60; }
         .counter-all span.count { background: #1dcf60; color: #000; }
@@ -95,58 +102,68 @@
         .counter-ts { border-color: #f1c40f; color: #f1c40f; }
         .counter-ts span.count { background: #f1c40f; color: #000; }
 
-        /* زر نسخ الكل */
         .copy-all-btn {
             margin-right: auto;
-            background: #1dcf60; color: #000;
+            background: #1dcf60; color: #000; padding: 6px 12px;
         }
-        .copy-all-btn:hover { background: #17a84e; color: #fff; }
+        .copy-all-btn:hover { background: #15a04a; color: #fff; }
 
-        /* -------- المحتوى والبلايليست -------- */
+        /* القسم السفلي (المشغل وقائمة القنوات) */
         .main-content {
-            display: flex; flex-direction: row; gap: 15px; width: 98%; max-width: 100%;
-            margin: 10px auto; align-items: flex-start; flex: 1; min-height: 0;
+            display: flex; flex-direction: row; gap: 15px; width: 100%; padding: 15px;
+            box-sizing: border-box; flex: 1; min-height: 0; background: #121212;
         }
+        
         .player-wrapper {
             flex: 3; height: 100%; background: #000; border-radius: 8px; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative; min-width: 0; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); position: relative; min-width: 0; overflow: hidden;
+            border: 1px solid #222;
         }
         #video-container { width: 100%; height: 100%; }
 
         .playlist-box {
-            flex: 1.2; background: #181818; border: 1px solid #333; border-radius: 8px;
-            height: 100%; overflow-y: auto; padding: 10px; box-sizing: border-box;
+            flex: 1.2; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px;
+            height: 100%; overflow-y: auto; padding: 12px; box-sizing: border-box;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
         }
-        .playlist-box h3 { margin: 0 0 10px 0; font-size: 13px; color: #1dcf60; border-bottom: 1px solid #333; padding-bottom: 8px; text-align: center; }
+        
+        .playlist-box::-webkit-scrollbar { width: 8px; }
+        .playlist-box::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .playlist-box::-webkit-scrollbar-track { background: #1a1a1a; }
+
+        .playlist-box h3 { 
+            margin: 0 0 12px 0; font-size: 13px; color: #1dcf60; 
+            border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; font-weight: bold;
+        }
         
         .playlist-item {
-            padding: 8px; background: #222; margin-bottom: 6px; border-radius: 4px;
+            padding: 10px; background: #252525; margin-bottom: 8px; border-radius: 6px;
             transition: 0.2s; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            border: 1px solid transparent;
         }
-        .playlist-item:hover { background: #2a2a2a; border-right: 3px solid #1dcf60; }
-        .playlist-item.active { background: #1a3a24; border-right: 3px solid #1dcf60; }
+        .playlist-item:hover { background: #2c2c2c; border-right: 3px solid #1dcf60; border-color: #333; }
+        .playlist-item.active { background: #1e2e22; border-right: 3px solid #1dcf60; border-color: #2b4532; }
         
         .ch-name {
             flex: 1; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            color: #ddd;
         }
-        .playlist-item.active .ch-name { color: #88c79c; font-weight: bold; }
+        .playlist-item.active .ch-name { color: #1dcf60; font-weight: bold; }
 
-        /* الأيقونات والأزرار */
-        .ch-actions { display: flex; gap: 4px; }
+        .ch-actions { display: flex; gap: 6px; }
         
         .icon-btn {
-            background: #343c4a; color: #e2e8f0; border: none; border-radius: 6px;
-            padding: 5px 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+            background: #333; color: #ccc; border: none; border-radius: 4px;
+            padding: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        .icon-btn:hover { background: #475569; color: #fff; }
+        .icon-btn:hover { background: #4a4a4a; color: #fff; }
         .icon-btn svg { width: 14px; height: 14px; }
 
-        /* التوست (إشعار النسخ) */
         #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #1dcf60; color: #000; padding: 10px 20px; border-radius: 6px;
-            font-size: 12px; font-weight: bold; opacity: 0; transition: opacity 0.3s ease-in-out;
-            z-index: 1000; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1dcf60; color: #000; padding: 12px 25px; border-radius: 8px;
+            font-size: 13px; font-weight: bold; opacity: 0; transition: opacity 0.3s ease-in-out;
+            z-index: 1000; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .toast-show { opacity: 1 !important; }
 
@@ -154,10 +171,11 @@
         .jw-icon-fullscreen { background-size: 55%; background-position: center; background-repeat: no-repeat; }
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             body { height: auto; overflow-x: hidden; }
-            .main-content { flex-direction: column; }
-            .player-wrapper, .playlist-box { width: 100%; height: 400px; flex: none; }
+            .main-content { flex-direction: column; padding: 10px; }
+            .player-wrapper { width: 100%; height: 50vh; flex: none; }
+            .playlist-box { width: 100%; height: 50vh; flex: none; }
             .manual-inputs { flex-direction: column; }
             input[type="text"], select, button { width: 100%; }
             .buttons-group { width: 100%; flex-direction: row; }
