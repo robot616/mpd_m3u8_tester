@@ -26,7 +26,7 @@
         }
         .header h1 { margin: 0; font-size: 22px; color: #1dcf60; }
         
-        /* المربع العلوي: ثابت بنفس الأبعاد والتقفيلة القديمة (محمي من الانضغاط) */
+        /* المربع العلوي: ثابت بنفس الأبعاد والتقفيلة (محمي من الانضغاط) */
         .controls-container {
             padding: 20px; background: #222; display: flex; flex-direction: column; gap: 15px;
             width: 95%; max-width: 1000px; margin: 15px auto; flex-shrink: 0;
@@ -115,7 +115,7 @@
 
         .player-wrapper {
             flex: 3; background: #000; border-radius: 8px; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative; min-width: 0; height: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative; min-width: 0; height: 100%; overflow: hidden;
         }
         #video-container { width: 100%; height: 100%; }
 
@@ -158,8 +158,7 @@
         }
         .toast-show { opacity: 1 !important; }
 
-        .jw-icon-fullscreen svg { display: none !important; }
-        .jw-icon-fullscreen { background-size: 55%; background-position: center; background-repeat: no-repeat; }
+        /* إخفاء الأزرار غير الضرورية من JW Player فقط (مع ترك زرار الشاشة الكاملة يعمل بشكل طبيعي) */
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
 
         @media (max-width: 768px) {
@@ -535,12 +534,15 @@
                 let setupConfig = {
                     file: url,
                     type: url.indexOf('.m3u8') !== -1 || url.indexOf('.ts') !== -1 ? 'hls' : 'dash',
-                    width: "100%", height: "100%", autostart: true, stretching: "uniform"
+                    width: "100%", height: "100%", autostart: true, 
+                    stretching: "uniform" /* هذه الخاصية تضمن بقاء الصورة بأبعادها الأصلية داخل مساحة البلاير */
                 };
 
                 if (k1 && k2) { setupConfig.drm = { clearkey: { keyId: k1, key: k2 } }; }
 
                 const playerInstance = jwplayer("jw-player").setup(setupConfig);
+                
+                /* تم الإبقاء على زر التوسيع في حال أردت التبديل بين الأبعاد الطبيعية والتعبئة الكاملة */
                 playerInstance.on('ready', function() {
                     let isStretched = false;
                     const diagonalCutArrow = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgMTBsNy03bS02IDBoNnY2bS0xMSA1bC03IDdtNiAwSDN2LTYiLz48L3N2Zz4=";
@@ -556,7 +558,8 @@
             } else if (playerType === 'shaka') {
                 container.innerHTML = `
                     <div id="shaka-ui-container" dir="ltr" style="width: 100%; height: 100%; position: relative;">
-                        <video id="shaka-video" style="width: 100%; height: 100%;" autoplay></video>
+                        <!-- object-fit: contain تحافظ على أبعاد الفيديو في Shaka Player بدون مطط -->
+                        <video id="shaka-video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
                     </div>
                 `;
                 const videoElement = document.getElementById('shaka-video');
