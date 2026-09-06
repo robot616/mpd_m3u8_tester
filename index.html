@@ -13,79 +13,81 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css">
 
     <style>
-        /* إغلاق التمرير تماماً وتثبيت الصفحة بملء الشاشة */
+        /* التنسيق الأساسي الطبيعي المريح */
         body {
-            margin: 0; padding: 0; background: #121212; color: #e0e0e0;
+            margin: 0; padding: 0; background: #181818; color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+            min-height: 100vh; padding-bottom: 40px;
         }
-        
         .header {
-            background: #1a1a1a; padding: 12px; border-bottom: 2px solid #1dcf60;
-            text-align: center; flex-shrink: 0;
+            background: #111; padding: 15px; border-bottom: 2px solid #1dcf60;
+            text-align: center;
         }
-        .header h1 { margin: 0; font-size: 18px; color: #1dcf60; font-weight: bold; }
+        .header h1 { margin: 0; font-size: 22px; color: #1dcf60; }
         
-        /* قسم التحكم الثابت في الأعلى */
         .controls-container {
-            padding: 15px; background: #1e1e1e; display: flex; flex-direction: column; gap: 12px;
-            width: 100%; box-sizing: border-box; flex-shrink: 0; border-bottom: 1px solid #2a2a2a;
+            padding: 20px; background: #222; display: flex; flex-direction: column; gap: 15px;
+            width: 95%; max-width: 1000px; margin: 20px auto 0;
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #333;
+            box-sizing: border-box;
         }
-        
-        .auto-extract-box { width: 100%; display: flex; gap: 10px; }
+        .auto-extract-box { width: 100%; display: flex; flex-direction: column; gap: 10px; }
         .auto-extract-box textarea {
-            flex: 1; height: 50px; padding: 10px; background: #252525; border: 1px dashed #1dcf60; 
-            color: #fff; border-radius: 6px; font-size: 13px; outline: none; resize: none; 
-            transition: background 0.3s;
+            width: 100%; height: 100px; padding: 12px; background: #1a2a20; border: 1px dashed #1dcf60; color: #fff;
+            border-radius: 6px; font-size: 14px; outline: none; resize: vertical; box-sizing: border-box;
         }
-        .auto-extract-box textarea:focus { background: #2a2a2a; }
-        
+        .auto-extract-box textarea::placeholder { color: #88c79c; }
+
         .extract-action-btn {
-            width: 150px; background: #007bff; color: #fff; border: none; font-weight: bold;
-            border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 13px;
+            padding: 12px; background: #0084ff; color: #fff; border: none; font-weight: bold;
+            border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 15px;
         }
-        .extract-action-btn:hover { background: #0056b3; }
+        .extract-action-btn:hover { background: #006bd6; }
         
-        /* نظام الشبكة (Grid) لضبط أحجام المربعات بشكل متناسق في سطر واحد */
         .manual-inputs {
-            display: grid; grid-template-columns: 3fr 2fr 2fr 1.5fr; gap: 10px; width: 100%;
+            display: flex; flex-wrap: wrap; gap: 10px; width: 100%; align-items: center;
         }
         input[type="text"], select {
-            padding: 10px; background: #252525; border: 1px solid #333; color: #fff;
-            border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.3s;
-            width: 100%; box-sizing: border-box;
+            padding: 12px; background: #111; border: 1px solid #444; color: #fff;
+            border-radius: 6px; font-size: 14px; outline: none; flex: 1; min-width: 180px;
         }
         input[type="text"]:focus, select:focus { border-color: #1dcf60; }
         
+        /* شريط الأزرار والعدادات (تم تقليص الأزرار قليلاً لإضافة أيقونة النسخ) */
         .action-row {
-            display: flex; gap: 10px; width: 100%; align-items: center; justify-content: space-between;
+            display: flex; gap: 10px; width: 100%;
+            align-items: center; flex-wrap: wrap; justify-content: space-between;
         }
         
-        .buttons-group { display: flex; gap: 10px; flex: 1; max-width: 400px; }
+        .buttons-group {
+            display: flex; gap: 10px; flex: 1.2; min-width: 250px;
+        }
         button.play-btn {
-            padding: 10px; background: #1dcf60; color: #000; border: none; flex: 2;
-            border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 12px 20px; background: #1dcf60; color: #000; border: none; flex: 2;
+            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        button.play-btn:hover { background: #15a04a; }
+        button.play-btn:hover { background: #17a84e; }
         button.clear-btn {
-            padding: 10px; background: #e74c3c; color: #fff; border: none; flex: 1;
-            border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 12px 20px; background: #ff4d4d; color: #fff; border: none; flex: 1;
+            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        button.clear-btn:hover { background: #c0392b; }
+        button.clear-btn:hover { background: #cc0000; }
 
         .counters-container {
-            display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex: 1;
+            display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; flex: 2;
         }
         .counter-badge {
-            background: #252525; border: 1px solid #333; padding: 6px 10px; 
-            border-radius: 6px; font-size: 11px; font-weight: bold; 
+            background: #222; border: 1px solid #333; padding: 6px 10px; 
+            border-radius: 6px; font-size: 12px; font-weight: bold; 
             display: flex; align-items: center; gap: 6px;
-            cursor: pointer; opacity: 0.6; transition: all 0.2s;
+            cursor: pointer; opacity: 0.5; transition: all 0.2s;
         }
-        .counter-badge:hover { opacity: 0.9; background: #2a2a2a; }
-        .counter-badge.active { opacity: 1; border-width: 2px; }
-        .counter-badge span.count { padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; }
+        .counter-badge:hover { opacity: 0.8; }
+        .counter-badge.active { opacity: 1; transform: scale(1.05); border-width: 2px; }
         
+        .counter-badge span.count {
+            padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff;
+        }
         .counter-all { border-color: #1dcf60; color: #1dcf60; }
         .counter-all span.count { background: #1dcf60; color: #000; }
         .counter-mpd { border-color: #e74c3c; color: #e74c3c; }
@@ -95,67 +97,80 @@
         .counter-ts { border-color: #f1c40f; color: #f1c40f; }
         .counter-ts span.count { background: #f1c40f; color: #000; }
 
-        .copy-all-btn { background: #1dcf60; color: #000; padding: 6px 12px; margin-right: auto; }
-        .copy-all-btn:hover { background: #15a04a; color: #fff; }
-
-        /* القسم السفلي: يأخذ باقي مساحة الشاشة بالكامل */
-        .main-content {
-            display: flex; flex-direction: row; gap: 15px; width: 100%; padding: 15px;
-            box-sizing: border-box; flex: 1; min-height: 0; background: #121212;
+        /* زر نسخ الكل أقصى اليسار */
+        .copy-all-btn {
+            margin-right: 10px;
+            background: #343c4a; color: #fff; padding: 8px 12px;
+            border: 1px solid #475569; border-radius: 6px;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        
-        /* المشغل يأخذ مساحته الطبيعية بجوار القائمة */
+        .copy-all-btn:hover { background: #1dcf60; color: #000; border-color: #1dcf60; }
+        .copy-all-btn svg { width: 16px; height: 16px; }
+
+        /* المحتوى الأساسي (المشغل والقائمة بأبعاد طبيعية ومريحة) */
+        .main-content {
+            display: flex; flex-direction: row; gap: 20px; width: 95%; max-width: 1000px;
+            margin: 20px auto; align-items: flex-start;
+        }
+
         .player-wrapper {
-            flex: 7; height: 100%; background: #000; border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4); position: relative; border: 1px solid #222;
+            flex: 3; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative; min-width: 0;
         }
         #video-container { width: 100%; height: 100%; }
 
-        /* القائمة */
         .playlist-box {
-            flex: 3; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px;
-            height: 100%; overflow-y: auto; padding: 12px; box-sizing: border-box;
+            flex: 1.2; background: #181818; border: 1px solid #333; border-radius: 8px;
+            max-height: 450px; overflow-y: auto; padding: 10px; box-sizing: border-box;
         }
         .playlist-box::-webkit-scrollbar { width: 6px; }
-        .playlist-box::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .playlist-box::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
         
-        .playlist-box h3 { 
-            margin: 0 0 12px 0; font-size: 13px; color: #1dcf60; 
-            border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center;
-        }
+        .playlist-box h3 { margin: 0 0 10px 0; font-size: 14px; color: #1dcf60; border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; }
         
         .playlist-item {
-            padding: 10px; background: #252525; margin-bottom: 8px; border-radius: 6px;
-            display: flex; justify-content: space-between; align-items: center; gap: 8px;
-            border: 1px solid transparent; transition: 0.2s;
+            padding: 8px; background: #222; margin-bottom: 6px; border-radius: 4px;
+            transition: 0.2s; display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
-        .playlist-item:hover { background: #2c2c2c; border-right: 3px solid #1dcf60; }
-        .playlist-item.active { background: #1e2e22; border-right: 3px solid #1dcf60; }
+        .playlist-item:hover { background: #2a2a2a; border-right: 3px solid #1dcf60; }
+        .playlist-item.active { background: #1a3a24; border-right: 3px solid #1dcf60; }
         
         .ch-name {
-            flex: 1; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ddd;
+            flex: 1; cursor: pointer; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .playlist-item.active .ch-name { color: #1dcf60; font-weight: bold; }
+        .playlist-item.active .ch-name { color: #88c79c; font-weight: bold; }
 
-        .ch-actions { display: flex; gap: 6px; }
+        .ch-actions { display: flex; gap: 5px; }
+        
         .icon-btn {
-            background: #333; color: #ccc; border: none; border-radius: 4px;
-            padding: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+            background: #343c4a; color: #e2e8f0; border: none; border-radius: 6px;
+            padding: 6px 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        .icon-btn:hover { background: #4a4a4a; color: #fff; }
+        .icon-btn:hover { background: #1dcf60; color: #000; }
         .icon-btn svg { width: 14px; height: 14px; }
 
+        /* التوست (إشعار النسخ) */
         #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #1dcf60; color: #000; padding: 12px 25px; border-radius: 8px;
-            font-size: 13px; font-weight: bold; opacity: 0; transition: opacity 0.3s;
-            z-index: 1000; pointer-events: none;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #1dcf60; color: #000; padding: 10px 20px; border-radius: 6px;
+            font-size: 13px; font-weight: bold; opacity: 0; transition: opacity 0.3s ease-in-out;
+            z-index: 1000; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .toast-show { opacity: 1 !important; }
+
         .jw-icon-fullscreen svg { display: none !important; }
         .jw-icon-fullscreen { background-size: 55%; background-position: center; background-repeat: no-repeat; }
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
 
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .player-wrapper, .playlist-box { width: 100%; flex: none; }
+            .manual-inputs { flex-direction: column; }
+            input[type="text"], select, button { width: 100%; }
+            .buttons-group { width: 100%; flex-direction: row; }
+            .counters-container { width: 100%; justify-content: center; margin-top: 10px; }
+            .copy-all-btn { margin-right: 0; }
+        }
     </style>
 </head>
 <body>
@@ -165,13 +180,11 @@
     </div>
 
     <div class="controls-container">
-        <!-- مربع الاستخراج والزر بجواره -->
         <div class="auto-extract-box">
             <textarea id="autoInput" placeholder="الصق محتوى الملف بالكامل هنا..."></textarea>
-            <button class="extract-action-btn" onclick="extractPlaylist()">استخراج وفصل<br>تلقائياً 🔄</button>
+            <button class="extract-action-btn" onclick="extractPlaylist()">استخراج وفصل القنوات تلقائياً 🔄</button>
         </div>
 
-        <!-- مربعات الإدخال بنظام الشبكة (Grid) -->
         <div class="manual-inputs">
             <input type="text" id="streamUrl" placeholder="رابط القناة (URL)">
             <input type="text" id="keyId" placeholder="Key ID (k1)">
@@ -182,34 +195,32 @@
             </select>
         </div>
 
-        <!-- الأزرار والعدادات -->
         <div class="action-row">
             <div class="buttons-group">
                 <button class="play-btn" onclick="testStream()">تشغيل القناة المحددة ▶</button>
                 <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
             </div>
-            
-            <button class="icon-btn copy-all-btn" onclick="copyAllChannels()" title="نسخ أكواد جميع القنوات المستخرجة">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-
             <div class="counters-container">
                 <div id="badge-all" class="counter-badge counter-all active" onclick="filterByFormat('all')">الكل <span class="count" id="count-all">0</span></div>
                 <div id="badge-mpd" class="counter-badge counter-mpd" onclick="filterByFormat('mpd')">MPD <span class="count" id="count-mpd">0</span></div>
                 <div id="badge-m3u8" class="counter-badge counter-m3u8" onclick="filterByFormat('m3u8')">M3U8 <span class="count" id="count-m3u8">0</span></div>
                 <div id="badge-ts" class="counter-badge counter-ts" onclick="filterByFormat('ts')">TS <span class="count" id="count-ts">0</span></div>
+                
+                <!-- زر نسخ كل القنوات أقصى اليسار -->
+                <button class="copy-all-btn" onclick="copyAllChannels()" title="نسخ أكواد جميع القنوات المستخرجة">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- المشغل والقائمة يأخذان المساحة المتبقية تماماً -->
     <div class="main-content">
         <div class="player-wrapper">
             <div id="video-container"></div>
         </div>
         <div class="playlist-box" id="playlistContainer">
             <h3>قائمة القنوات المستخرجة (0)</h3>
-            <div style="color: #777; text-align: center; font-size: 13px; margin-top: 20px;">لم يتم استخراج قنوات بعد</div>
+            <div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">لم يتم استخراج قنوات بعد</div>
         </div>
     </div>
 
@@ -227,14 +238,7 @@
             setTimeout(() => { toast.classList.remove('toast-show'); }, 2000);
         }
 
-        function copyLink(idx, event) {
-            event.stopPropagation();
-            const ch = extractedChannels[idx];
-            navigator.clipboard.writeText(ch.url).then(() => {
-                showToast('تم نسخ الرابط بنجاح ✓');
-            });
-        }
-
+        // نسخ كود الإضافة (بصيغة JS Object)
         function copyExtCode(idx, event) {
             event.stopPropagation();
             const ch = extractedChannels[idx];
@@ -250,6 +254,16 @@
             });
         }
 
+        // نسخ الرابط فقط
+        function copyLink(idx, event) {
+            event.stopPropagation();
+            const ch = extractedChannels[idx];
+            navigator.clipboard.writeText(ch.url).then(() => {
+                showToast('تم نسخ الرابط بنجاح ✓');
+            });
+        }
+
+        // نسخ جميع القنوات المستخرجة
         function copyAllChannels() {
             if (extractedChannels.length === 0) {
                 showToast('لا توجد قنوات لنسخها!');
@@ -430,9 +444,9 @@
             let html = `<h3>قائمة القنوات المستخرجة (${extractedChannels.length > 0 ? displayedChannels.length : 0})</h3>`;
 
             if (extractedChannels.length === 0) {
-                html += `<div style="color: #ff4d4d; text-align: center; font-size: 13px; margin-top: 20px;">لم يتم العثور على روابط بث صالحة!</div>`;
+                html += `<div style="color: #ff4d4d; text-align: center; font-size: 12px; margin-top: 20px;">لم يتم العثور على روابط بث صالحة!</div>`;
             } else if (displayedChannels.length === 0) {
-                html += `<div style="color: #777; text-align: center; font-size: 13px; margin-top: 20px;">لا توجد قنوات بهذه الصيغة</div>`;
+                html += `<div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">لا توجد قنوات بهذه الصيغة</div>`;
             } else {
                 displayedChannels.forEach((ch) => {
                     let originalIndex = extractedChannels.indexOf(ch);
@@ -478,7 +492,7 @@
             filterByFormat('all'); 
             
             document.getElementById('playlistContainer').innerHTML = `<h3>قائمة القنوات المستخرجة (0)</h3>
-            <div style="color: #777; text-align: center; font-size: 13px; margin-top: 20px;">تم التطهير بنجاح</div>`;
+            <div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">تم التطهير بنجاح</div>`;
             
             const container = document.getElementById('video-container');
             container.innerHTML = '';
