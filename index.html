@@ -156,8 +156,21 @@
         }
         .toast-show { opacity: 1 !important; }
 
-        /* إخفاء الأزرار غير الضرورية من JW Player فقط (مع ترك زرار الشاشة الكاملة يعمل بشكل طبيعي) */
+        /* إخفاء الأزرار غير الضرورية من JW Player فقط */
         .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
+        
+        /* إضافة أيقونة الشاشة الكاملة الاحترافية */
+        .jw-icon-fullscreen svg { display: none !important; }
+        .jw-icon-fullscreen {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTggM0g1YTIgMiAwIDAgMC0yIDJ2M20xOCAwVjVhMiAyIDAgMCAwLTItMmgtM20wIDE4aDNhMiAyIDAgMCAwIDItMnYtM00zIDE2djNhMiAyIDAgMCAwIDIgMmgzIj48L3BhdGg+PC9zdmc+');
+            background-size: 16px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        /* تغيير شكل الأيقونة عند الدخول في وضع الشاشة الكاملة (العكسي) */
+        .jw-flag-fullscreen .jw-icon-fullscreen {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTggM3YzYTIgMiAwIDAgMS0yIDJIM20xOCAwaC0zYTIgMiAwIDAgMS0yLTJWM20wIDE4di0zYTIgMiAwIDAgMSAyLTJoM00zIDE2aDNhMiAyIDAgMCAxIDIgMnYzIj48L3BhdGg+PC9zdmc+');
+        }
 
         @media (max-width: 768px) {
             body { height: auto; overflow: visible; }
