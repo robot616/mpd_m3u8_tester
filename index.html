@@ -209,6 +209,16 @@
                 <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
             </div>
             
+            <!-- المنطقة الجديدة لأزرار القناة التالية والسابقة -->
+            <div style="display: flex; gap: 8px;">
+                <button class="copy-all-btn" onclick="playNextChannel()" title="القناة التالية">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <button class="copy-all-btn" onclick="playPrevChannel()" title="القناة السابقة">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </button>
+            </div>
+
             <div class="counters-container">
                 <div id="badge-all" class="counter-badge counter-all active" onclick="filterByFormat('all')">الكل <span class="count" id="count-all">0</span></div>
                 <div id="badge-mpd" class="counter-badge counter-mpd" onclick="filterByFormat('mpd')">MPD <span class="count" id="count-mpd">0</span></div>
@@ -485,6 +495,30 @@
             });
 
             testStream();
+        }
+
+        function playNextChannel() {
+            let activeEl = document.querySelector('.playlist-item.active');
+            if (!activeEl) return;
+            let displayedItems = Array.from(document.querySelectorAll('.playlist-item'));
+            let activeListIndex = displayedItems.findIndex(el => el.id === activeEl.id);
+            if (activeListIndex !== -1 && activeListIndex < displayedItems.length - 1) {
+                let nextIdx = parseInt(displayedItems[activeListIndex + 1].id.replace('ch-item-', ''));
+                selectChannel(nextIdx);
+                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function playPrevChannel() {
+            let activeEl = document.querySelector('.playlist-item.active');
+            if (!activeEl) return;
+            let displayedItems = Array.from(document.querySelectorAll('.playlist-item'));
+            let activeListIndex = displayedItems.findIndex(el => el.id === activeEl.id);
+            if (activeListIndex > 0) {
+                let prevIdx = parseInt(displayedItems[activeListIndex - 1].id.replace('ch-item-', ''));
+                selectChannel(prevIdx);
+                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         function clearAll() {
