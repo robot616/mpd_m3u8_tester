@@ -219,7 +219,6 @@
                 <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
             </div>
             
-            <!-- المنطقة الجديدة لأزرار القناة السابقة والتالية بالكلاس الهادئ (nav-btn) -->
             <div style="display: flex; gap: 8px;">
                 <button class="nav-btn" onclick="playPrevChannel()" title="القناة السابقة">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 8h12z"/></svg>
@@ -515,7 +514,7 @@
             if (activeListIndex !== -1 && activeListIndex < displayedItems.length - 1) {
                 let nextIdx = parseInt(displayedItems[activeListIndex + 1].id.replace('ch-item-', ''));
                 selectChannel(nextIdx);
-                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
@@ -527,7 +526,7 @@
             if (activeListIndex > 0) {
                 let prevIdx = parseInt(displayedItems[activeListIndex - 1].id.replace('ch-item-', ''));
                 selectChannel(prevIdx);
-                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
