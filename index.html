@@ -514,7 +514,7 @@
             if (activeListIndex !== -1 && activeListIndex < displayedItems.length - 1) {
                 let nextIdx = parseInt(displayedItems[activeListIndex + 1].id.replace('ch-item-', ''));
                 selectChannel(nextIdx);
-                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
@@ -526,7 +526,7 @@
             if (activeListIndex > 0) {
                 let prevIdx = parseInt(displayedItems[activeListIndex - 1].id.replace('ch-item-', ''));
                 selectChannel(prevIdx);
-                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
