@@ -105,6 +105,16 @@
         .copy-all-btn:hover { background: #1dcf60; color: #000; border-color: #1dcf60; }
         .copy-all-btn svg { width: 16px; height: 16px; }
 
+        /* أزرار التنقل بين القنوات (السابق والتالي) بإستايل هادئ */
+        .nav-btn {
+            background: #2a2a2a; color: #ddd; padding: 8px 12px;
+            border: 1px solid #444; border-radius: 6px;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-btn:hover { background: #383838; color: #fff; border-color: #555; }
+        .nav-btn:active { background: #4a4a4a; }
+        .nav-btn svg { width: 16px; height: 16px; }
+
         /* القسم السفلي: يأخذ المساحة المتبقية بدون التأثير على التمرير الخارجي */
         .main-content {
             display: flex; flex-direction: row; gap: 20px; width: 95%; max-width: 1000px;
@@ -209,12 +219,12 @@
                 <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
             </div>
             
-            <!-- المنطقة الجديدة لأزرار القناة السابقة والتالية (تم التبديل وتحسين الأيقونات) -->
+            <!-- المنطقة الجديدة لأزرار القناة السابقة والتالية بالكلاس الهادئ (nav-btn) -->
             <div style="display: flex; gap: 8px;">
-                <button class="copy-all-btn" onclick="playPrevChannel()" title="القناة السابقة">
+                <button class="nav-btn" onclick="playPrevChannel()" title="القناة السابقة">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 8h12z"/></svg>
                 </button>
-                <button class="copy-all-btn" onclick="playNextChannel()" title="القناة التالية">
+                <button class="nav-btn" onclick="playNextChannel()" title="القناة التالية">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l6-8H6z"/></svg>
                 </button>
             </div>
