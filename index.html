@@ -3,662 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة فحص وبلايليست قنوات MPD / M3U8</title>
-    
-    <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css">
-
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>مختبر ومستخرج الإذاعات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        /* إغلاق التمرير تماماً وتثبيت الصفحة بملء الشاشة */
-        body {
-            margin: 0; padding: 0; background: #181818; color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        :root {
+            --primary: #00f2fe;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
         
-        .header {
-            background: #111; padding: 15px; border-bottom: 2px solid #1dcf60;
-            text-align: center; flex-shrink: 0;
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
-        .header h1 { margin: 0; font-size: 22px; color: #1dcf60; }
-        
-        /* المربع العلوي: ثابت بنفس الأبعاد والتقفيلة القديمة (محمي من الانضغاط) */
-        .controls-container {
-            padding: 20px; background: #222; display: flex; flex-direction: column; gap: 15px;
-            width: 95%; max-width: 1000px; margin: 15px auto; flex-shrink: 0;
-            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #333;
-            box-sizing: border-box;
-        }
-        
-        .auto-extract-box { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .auto-extract-box textarea {
-            width: 100%; height: 100px; padding: 12px; background: #1a2a20; border: 1px dashed #1dcf60; color: #fff;
-            border-radius: 6px; font-size: 14px; outline: none; resize: none; box-sizing: border-box;
-        }
-        .auto-extract-box textarea::placeholder { color: #88c79c; }
 
-        .extract-action-btn {
-            padding: 12px; background: #0084ff; color: #fff; border: none; font-weight: bold;
-            border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 15px;
-        }
-        .extract-action-btn:hover { background: #006bd6; }
-        
-        .manual-inputs {
-            display: flex; flex-wrap: wrap; gap: 10px; width: 100%; align-items: center;
-        }
-        input[type="text"], select {
-            padding: 12px; background: #111; border: 1px solid #444; color: #fff;
-            border-radius: 6px; font-size: 14px; outline: none; flex: 1; min-width: 180px;
-        }
-        input[type="text"]:focus, select:focus { border-color: #1dcf60; }
-        
-        /* سطر واحد فقط للأزرار والعدادات وأيقونة النسخ */
-        .action-row {
-            display: flex; gap: 10px; width: 100%;
-            align-items: center; justify-content: space-between;
+        /* الهيدر العلوي وأزرار التحكم الشاملة */
+        header {
+            position: relative;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.1);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        .buttons-group {
-            display: flex; gap: 10px; flex: 1; max-width: 350px;
-        }
-        button.play-btn {
-            padding: 10px 15px; background: #1dcf60; color: #000; border: none; flex: 2;
-            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        button.play-btn:hover { background: #17a84e; }
-        button.clear-btn {
-            padding: 10px 15px; background: #ff4d4d; color: #fff; border: none; flex: 1;
-            border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        button.clear-btn:hover { background: #cc0000; }
+        h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
 
-        .counters-container {
-            display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex: 2; flex-wrap: nowrap;
+        .header-actions {
+            position: absolute;
+            left: 20px;
+            display: flex;
+            gap: 12px;
         }
-        .counter-badge {
-            background: #222; border: 1px solid #333; padding: 6px 10px; 
-            border-radius: 6px; font-size: 12px; font-weight: bold; 
-            display: flex; align-items: center; gap: 6px;
-            cursor: pointer; opacity: 0.5; transition: all 0.2s; white-space: nowrap;
-        }
-        .counter-badge:hover { opacity: 0.8; }
-        .counter-badge.active { opacity: 1; transform: scale(1.05); border-width: 2px; }
-        
-        .counter-badge span.count { padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #fff; }
-        .counter-all { border-color: #1dcf60; color: #1dcf60; }
-        .counter-all span.count { background: #1dcf60; color: #000; }
-        .counter-mpd { border-color: #e74c3c; color: #e74c3c; }
-        .counter-mpd span.count { background: #e74c3c; }
-        .counter-m3u8 { border-color: #3498db; color: #3498db; }
-        .counter-m3u8 span.count { background: #3498db; }
-        .counter-ts { border-color: #f1c40f; color: #f1c40f; }
-        .counter-ts span.count { background: #f1c40f; color: #000; }
 
-        /* زر نسخ الكل أقصى اليسار */
+        .header-btn {
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .global-stop-btn {
+            background: #ef4444;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+        }
+        .global-stop-btn:hover { background: #dc2626; transform: scale(1.1); }
+
         .copy-all-btn {
-            background: #343c4a; color: #fff; padding: 8px 12px;
-            border: 1px solid #475569; border-radius: 6px;
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 4px 10px rgba(0, 242, 254, 0.4);
         }
-        .copy-all-btn:hover { background: #1dcf60; color: #000; border-color: #1dcf60; }
-        .copy-all-btn svg { width: 16px; height: 16px; }
+        .copy-all-btn:hover { background: #00c3cc; transform: scale(1.1); }
 
-        /* أزرار التنقل بين القنوات (السابق والتالي) بإستايل هادئ */
-        .nav-btn {
-            background: #2a2a2a; color: #ddd; padding: 8px 12px;
-            border: 1px solid #444; border-radius: 6px;
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-        }
-        .nav-btn:hover { background: #383838; color: #fff; border-color: #555; }
-        .nav-btn:active { background: #4a4a4a; }
-        .nav-btn svg { width: 16px; height: 16px; }
-
-        /* القسم السفلي: يأخذ المساحة المتبقية بدون التأثير على التمرير الخارجي */
-        .main-content {
-            display: flex; flex-direction: row; gap: 20px; width: 95%; max-width: 1000px;
-            margin: 0 auto 15px; align-items: stretch; flex: 1; min-height: 0; box-sizing: border-box;
+        .dashboard-container { 
+            display: flex; 
+            flex: 1; 
+            padding: 20px; 
+            gap: 15px; 
+            overflow: hidden;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .player-wrapper {
-            flex: 3; background: #000; border-radius: 8px; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative; min-width: 0; height: 100%; overflow: hidden;
+        .right-panel {
+            flex: 6.5;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-left: 5px;
         }
-        #video-container { width: 100%; height: 100%; }
 
-        /* القائمة: بها التمرير الداخلي الخاص بها */
-        .playlist-box {
-            flex: 1.2; background: #181818; border: 1px solid #333; border-radius: 8px;
-            height: 100%; overflow-y: auto; padding: 10px; box-sizing: border-box;
+        .left-panel {
+            flex: 3.5;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .playlist-box::-webkit-scrollbar { width: 6px; }
-        .playlist-box::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            border: 1px solid rgba(0, 242, 254, 0.2); 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-panel .card { flex: 1; overflow: hidden; padding: 15px 10px; }
+
+        .card-title { font-size: 1.1rem; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 8px; font-weight: 900;}
         
-        .playlist-box h3 { margin: 0 0 10px 0; font-size: 14px; color: #1dcf60; border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; }
-        
-        .playlist-item {
-            padding: 8px; background: #222; margin-bottom: 6px; border-radius: 4px;
-            transition: 0.2s; display: flex; justify-content: space-between; align-items: center; gap: 10px;
-            scroll-margin-top: 60px;
+        input[type="text"], textarea {
+            width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;
+            background: #0b1120; color: white; font-size: 1rem; text-align: left; direction: ltr;
         }
-        .playlist-item:hover { background: #2a2a2a; border-right: 3px solid #1dcf60; }
-        .playlist-item.active { background: #1a3a24; border-right: 3px solid #1dcf60; }
-        
-        .ch-name {
-            flex: 1; cursor: pointer; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .playlist-item.active .ch-name { color: #88c79c; font-weight: bold; }
+        textarea { height: 180px; resize: none; flex-shrink: 0; margin-bottom: 12px; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 5px rgba(0, 242, 254, 0.3); }
 
-        .ch-actions { display: flex; gap: 5px; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        button.action-btn {
+            padding: 8px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; gap: 6px; font-size: 0.95rem; flex: 1; justify-content: center;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: #00c3cc; transform: translateY(-2px); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
+        .btn-secondary { background: #334155; color: white; }
+        .btn-secondary:hover { background: #475569; transform: translateY(-2px); }
+
+        .player-status { padding: 10px; border-radius: 8px; background: #000; display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
+        .status-text { color: #94a3b8; font-size: 0.9rem; }
+        .status-playing { color: #22c55e; font-weight: bold; }
+        .status-error { color: #ef4444; font-weight: bold; }
+
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #334155; }
+        .count-badge { background: var(--primary); color: #000; padding: 3px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
         
-        .icon-btn {
-            background: #343c4a; color: #e2e8f0; border: none; border-radius: 4px;
-            padding: 6px 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        #resultsList {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
         }
-        .icon-btn:hover { background: #1dcf60; color: #000; }
-        .icon-btn svg { width: 14px; height: 14px; }
+        #resultsList::-webkit-scrollbar, .right-panel::-webkit-scrollbar { width: 5px; }
+        #resultsList::-webkit-scrollbar-thumb, .right-panel::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
-        #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #1dcf60; color: #000; padding: 10px 20px; border-radius: 6px;
-            font-size: 13px; font-weight: bold; opacity: 0; transition: opacity 0.3s ease-in-out;
-            z-index: 1000; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        .station-item {
+            background: #0b1120; border: 1px solid #334155; padding: 10px; border-radius: 6px;
+            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            transition: all 0.2s;
         }
-        .toast-show { opacity: 1 !important; }
-
-        /* إخفاء الأزرار غير الضرورية من JW Player فقط */
-        .jw-icon-playlist, .jw-icon-next, .jw-related-btn { display: none !important; }
+        .station-item:hover { border-color: var(--primary); }
         
-        /* إضافة أيقونة الشاشة الكاملة الاحترافية */
-        .jw-icon-fullscreen svg { display: none !important; }
-        .jw-icon-fullscreen {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTggM0g1YTIgMiAwIDAgMC0yIDJ2M20xOCAwVjVhMiAyIDAgMCAwLTItMmgtM20wIDE4aDNhMiAyIDAgMCAwIDItMnYtM00zIDE2djNhMiAyIDAgMCAwIDIgMmgzIj48L3BhdGg+PC9zdmc+');
-            background-size: 16px;
-            background-position: center;
-            background-repeat: no-repeat;
+        .station-item.playing {
+            border-color: var(--primary);
+            background: rgba(0, 242, 254, 0.15);
         }
-        /* تغيير شكل الأيقونة عند الدخول في وضع الشاشة الكاملة (العكسي) */
-        .jw-flag-fullscreen .jw-icon-fullscreen {
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTggM3YzYTIgMiAwIDAgMS0yIDJIM20xOCAwaC0zYTIgMiAwIDAgMS0yLTJWM20wIDE4di0zYTIgMiAwIDAgMSAyLTJoM00zIDE2aDNhMiAyIDAgMCAxIDIgMnYzIj48L3BhdGg+PC9zdmc+');
+        .station-item.playing .station-name {
+            color: var(--primary);
         }
 
-        @media (max-width: 768px) {
-            body { height: auto; overflow: visible; }
-            .main-content { flex-direction: column; height: 500px; flex: none; }
-            .player-wrapper, .playlist-box { width: 100%; flex: none; height: 50%; }
-            .action-row { flex-wrap: wrap; }
-            .counters-container { justify-content: center; width: 100%; }
+        .station-info { flex: 1; min-width: 0; cursor: pointer; display: flex; align-items: center; transition: color 0.2s; }
+        .station-name { font-weight: bold; color: #e2e8f0; font-size: 1rem; display: flex; align-items: center; gap: 8px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .station-info:hover .station-name { color: var(--primary); }
+        
+        .station-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .station-actions button { padding: 6px 10px; font-size: 0.85rem; flex: none; border-radius: 6px; }
+
+        audio { width: 100%; outline: none; border-radius: 8px; }
+
+        .empty-state { text-align: center; color: #64748b; margin-top: 40px; font-size: 1.1rem; }
+
+        @media (max-width: 900px) {
+            body { overflow: auto; }
+            .dashboard-container { flex-direction: column; overflow: visible; height: auto; }
+            .right-panel, .left-panel { flex: none; overflow: visible; }
+            #resultsList { max-height: 500px; }
+            .header-actions { left: 10px; }
+            .header-btn { width: 35px; height: 35px; font-size: 1rem; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>أداة فحص وتشغيل بلايليست القنوات الذكية ⚡</h1>
+    <header>
+        <h1><i class="fas fa-satellite-dish"></i> مختبر ومستخرج الإذاعات</h1>
+        <div class="header-actions">
+            <button class="header-btn copy-all-btn" onclick="copyAllFormats()" title="نسخ أكواد جميع الإذاعات المستخرجة">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="header-btn global-stop-btn" onclick="globalStopAndClear()" title="إيقاف تام ومسح كل شيء">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <div class="right-panel">
+            
+            <div class="card" style="gap: 10px;">
+                <div class="card-title"><i class="fas fa-play-circle"></i> المشغل واختبار الروابط</div>
+                
+                <audio id="audioPlayer" controls></audio>
+                
+                <div class="player-status">
+                    <span id="playerStatus" class="status-text">متوقف</span>
+                    <span id="currentTestUrl" style="font-size: 0.8rem; color: #64748b; direction: ltr; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                </div>
+                
+                <input type="text" id="quickUrl" placeholder="الصق رابط الإذاعة هنا (مثال: http://stream.zeno.fm/...)">
+
+                <div class="btn-group">
+                    <button class="action-btn btn-primary" onclick="testQuickUrl()"><i class="fas fa-play"></i> تشغيل بالمشغل</button>
+                    <button class="action-btn btn-danger" onclick="stopPlayer()"><i class="fas fa-stop"></i> إيقاف المشغل فقط</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-code"></i> استخراج الروابط من نص أو M3U</div>
+                <textarea id="extractInput" placeholder="الصق كود M3U بالكامل هنا، أو الصق أي نص عشوائي يحتوي على روابط ليتم استخراجها تلقائياً..."></textarea>
+                <div class="btn-group">
+                    <button class="action-btn btn-primary" onclick="extractStations()"><i class="fas fa-search"></i> استخراج الإذاعات</button>
+                    <button class="action-btn btn-secondary" onclick="document.getElementById('extractInput').value=''"><i class="fas fa-trash"></i> مسح النص</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="left-panel">
+            <div class="card">
+                <div class="results-header">
+                    <div class="card-title" style="margin:0;"><i class="fas fa-list"></i> الإذاعات المستخرجة</div>
+                    <div class="count-badge">العدد: <span id="stationCount">0</span></div>
+                </div>
+                
+                <div id="resultsList">
+                    <div class="empty-state">لم يتم استخراج أي إذاعات بعد.<br>الصق النص في المربع الأيمن واضغط "استخراج".</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="controls-container">
-        <div class="auto-extract-box">
-            <textarea id="autoInput" placeholder="الصق محتوى الملف بالكامل هنا..."></textarea>
-            <button class="extract-action-btn" onclick="extractPlaylist()">استخراج وفصل القنوات تلقائياً 🔄</button>
-        </div>
+<script>
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playerStatus = document.getElementById('playerStatus');
+    const currentTestUrl = document.getElementById('currentTestUrl');
+    let hlsInstance = null;
+    let currentExtractedStations = [];
 
-        <div class="manual-inputs">
-            <input type="text" id="streamUrl" placeholder="رابط القناة (URL)">
-            <input type="text" id="keyId" placeholder="Key ID (k1)">
-            <input type="text" id="keyVal" placeholder="Key (k2)">
-            <select id="playerType">
-                <option value="jw">JW Player (المفضل)</option>
-                <option value="shaka">Shaka Player</option>
-            </select>
-        </div>
+    function playStream(url) {
+        stopPlayer();
+        currentTestUrl.textContent = url;
+        playerStatus.textContent = "جاري الاتصال...";
+        playerStatus.className = "status-text text-warning";
 
-        <div class="action-row">
-            <div class="buttons-group">
-                <button class="play-btn" onclick="testStream()">تشغيل القناة المحددة ▶</button>
-                <button class="clear-btn" onclick="clearAll()">مسح الكل 🗑️</button>
-            </div>
-            
-            <div style="display: flex; gap: 8px;">
-                <button class="nav-btn" onclick="playPrevChannel()" title="القناة السابقة">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 8h12z"/></svg>
-                </button>
-                <button class="nav-btn" onclick="playNextChannel()" title="القناة التالية">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l6-8H6z"/></svg>
-                </button>
-            </div>
-
-            <div class="counters-container">
-                <div id="badge-all" class="counter-badge counter-all active" onclick="filterByFormat('all')">الكل <span class="count" id="count-all">0</span></div>
-                <div id="badge-mpd" class="counter-badge counter-mpd" onclick="filterByFormat('mpd')">MPD <span class="count" id="count-mpd">0</span></div>
-                <div id="badge-m3u8" class="counter-badge counter-m3u8" onclick="filterByFormat('m3u8')">M3U8 <span class="count" id="count-m3u8">0</span></div>
-                <div id="badge-ts" class="counter-badge counter-ts" onclick="filterByFormat('ts')">TS <span class="count" id="count-ts">0</span></div>
-                
-                <button class="copy-all-btn" onclick="copyAllChannels()" title="نسخ أكواد جميع القنوات المستخرجة">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="player-wrapper">
-            <div id="video-container"></div>
-        </div>
-        <div class="playlist-box">
-            <div style="display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; position: sticky; top: -10px; background: #181818; z-index: 10; padding-top: 10px;">
-                <input type="text" id="searchInput" placeholder="بحث عن قناة..." oninput="searchChannels()" style="flex: 1; padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 13px; outline: none;">
-                <div id="listCount" style="background: #222; border: 1px solid #444; color: #1dcf60; padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 25px;">0</div>
-            </div>
-            <div id="playlistContainer">
-                <div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">لم يتم استخراج قنوات بعد</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast">تم النسخ بنجاح</div>
-
-    <script>
-        let currentShakaPlayer = null;
-        let extractedChannels = [];
-        let currentFilter = 'all';
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('toast-show');
-            setTimeout(() => { toast.classList.remove('toast-show'); }, 2000);
-        }
-
-        function copyExtCode(idx, event) {
-            event.stopPropagation();
-            const ch = extractedChannels[idx];
-            
-            let extCode = `{ name: "${ch.name}", url: "${ch.url}"`;
-            if (ch.k1 && ch.k2) {
-                extCode += `, k1: "${ch.k1}", k2: "${ch.k2}"`;
-            }
-            extCode += ` },`;
-            
-            navigator.clipboard.writeText(extCode).then(() => {
-                showToast('تم نسخ كود القناة ✓');
+        if ((url.includes('.m3u8') || url.includes('.ts')) && Hls.isSupported()) {
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(audioPlayer);
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                audioPlayer.play().catch(e => setPlayerError());
             });
-        }
-
-        function copyLink(idx, event) {
-            event.stopPropagation();
-            const ch = extractedChannels[idx];
-            navigator.clipboard.writeText(ch.url).then(() => {
-                showToast('تم نسخ الرابط بنجاح ✓');
+            hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                if (data.fatal) setPlayerError();
             });
+        } else {
+            audioPlayer.src = url;
+            audioPlayer.play().catch(e => setPlayerError());
         }
+    }
 
-        function copyAllChannels() {
-            if (extractedChannels.length === 0) {
-                showToast('لا توجد قنوات لنسخها!');
-                return;
-            }
-            
-            let allCodes = extractedChannels.map(ch => {
-                let code = `{ name: "${ch.name}", url: "${ch.url}"`;
-                if (ch.k1 && ch.k2) {
-                    code += `, k1: "${ch.k1}", k2: "${ch.k2}"`;
-                }
-                code += ` },`;
-                return code;
-            }).join('\n');
+    function removePlayingHighlight() {
+        document.querySelectorAll('.station-item').forEach(item => {
+            item.classList.remove('playing');
+        });
+    }
 
-            navigator.clipboard.writeText(allCodes).then(() => {
-                showToast(`تم نسخ ${extractedChannels.length} قناة بنجاح ✓`);
-            });
+    function stopPlayer() {
+        if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+        audioPlayer.pause();
+        audioPlayer.removeAttribute('src');
+        audioPlayer.load();
+        playerStatus.textContent = "متوقف";
+        playerStatus.className = "status-text";
+        currentTestUrl.textContent = ""; 
+        removePlayingHighlight();
+    }
+
+    function globalStopAndClear() {
+        stopPlayer();
+        document.getElementById('extractInput').value = '';
+        document.getElementById('quickUrl').value = '';
+        document.getElementById('resultsList').innerHTML = '<div class="empty-state">لم يتم استخراج أي إذاعات بعد.<br>الصق النص في المربع الأيمن واضغط "استخراج".</div>';
+        document.getElementById('stationCount').textContent = '0';
+        currentExtractedStations = [];
+    }
+
+    audioPlayer.addEventListener('playing', () => {
+        playerStatus.textContent = "يعمل بنجاح";
+        playerStatus.className = "status-text status-playing";
+    });
+
+    audioPlayer.addEventListener('error', setPlayerError);
+
+    function setPlayerError() {
+        playerStatus.textContent = "الرابط لا يعمل أو محمي";
+        playerStatus.className = "status-text status-error";
+    }
+
+    function testQuickUrl() {
+        const url = document.getElementById('quickUrl').value.trim();
+        if (url) {
+            playStream(url);
         }
+    }
 
-        function filterByFormat(format) {
-            currentFilter = format;
-            document.querySelectorAll('.counter-badge').forEach(b => b.classList.remove('active'));
-            document.getElementById('badge-' + format).classList.add('active');
-            renderPlaylistUI();
-        }
+    function extractStations() {
+        const text = document.getElementById('extractInput').value;
+        const lines = text.split('\n');
+        const stations = [];
+        let tempName = '';
 
-        function searchChannels() {
-            renderPlaylistUI();
-        }
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line) continue;
 
-        function extractPlaylist() {
-            const rawText = document.getElementById('autoInput').value;
-            if (!rawText.trim()) {
-                alert("يرجى لصق النص أو الملف أولاً!");
-                return;
-            }
-
-            extractedChannels = [];
-            const lines = rawText.split(/\r?\n/);
-            
-            let pendingName = "";
-            let pendingUrls = [];
-            let pendingK1 = "";
-            let pendingK2 = "";
-            let pendingAllKeys = {}; 
-            let tempK1 = "";
-
-            function saveCurrentBlock() {
-                if (pendingUrls.length > 0) {
-                    pendingUrls.forEach((url, index) => {
-                        let urlLower = url.toLowerCase();
-                        let isM3u8 = urlLower.includes('.m3u8') || urlLower.includes('.ts') || urlLower.includes('.m3u');
-                        
-                        let finalK1 = isM3u8 ? "" : pendingK1;
-                        let finalK2 = isM3u8 ? "" : pendingK2;
-                        let finalAllKeys = isM3u8 ? {} : {...pendingAllKeys};
-                        
-                        let displayName = pendingName || `قناة مستخرجة ${extractedChannels.length + 1}`;
-                        if (pendingUrls.length > 1) {
-                            displayName += ` (رابط ${index + 1})`;
-                        }
-
-                        extractedChannels.push({
-                            name: displayName, url: url, k1: finalK1, k2: finalK2, allKeys: finalAllKeys
-                        });
-                    });
-                    
-                    pendingName = ""; pendingUrls = []; pendingK1 = ""; pendingK2 = ""; pendingAllKeys = {}; tempK1 = "";
+            // 1. استخراج من صيغة M3U
+            if (line.startsWith('#EXTINF')) {
+                const parts = line.split(',');
+                if (parts.length > 1) {
+                    tempName = parts.slice(1).join(',').trim();
+                } else {
+                    tempName = 'إذاعة غير معروفة';
                 }
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                if (!line) continue;
-
-                let isExtInf = line.toUpperCase().startsWith('#EXTINF');
-                let titleMatch = line.match(/"?(?:title|name)"?\s*:\s*["']([^"']+)["']/i);
-                let jsonNameMatch = line.match(/"([^"]+)"\s*:\s*\{/i);
-                
-                let keyRegex = /([a-fA-F0-9]{32})["']?\s*[:=]\s*["']?([a-fA-F0-9]{32})/g;
-                let match;
-                let foundKeyInLine = false;
-                
-                while ((match = keyRegex.exec(line)) !== null) {
-                    pendingAllKeys[match[1]] = match[2];
-                    foundKeyInLine = true;
-                }
-
-                let keyIdMatch = line.match(/"?(?:keyId|kid|k1)"?\s*:\s*["']?([a-fA-F0-9]{32})["']?/i);
-                let keyValMatch = line.match(/"?(?:key|k2)"?\s*:\s*["']?([a-fA-F0-9]{32})["']?/i);
-                
-                if (keyIdMatch && keyValMatch && !foundKeyInLine) {
-                    pendingAllKeys[keyIdMatch[1]] = keyValMatch[1];
-                    foundKeyInLine = true;
-                } else if (keyIdMatch && !foundKeyInLine) {
-                    tempK1 = keyIdMatch[1];
-                } else if (keyValMatch && tempK1 && !foundKeyInLine) {
-                    pendingAllKeys[tempK1] = keyValMatch[1];
-                    foundKeyInLine = true;
-                    tempK1 = "";
-                }
-
-                let hasNewName = isExtInf || titleMatch || jsonNameMatch;
-
-                if (pendingUrls.length > 0) {
-                    if (hasNewName || (foundKeyInLine && pendingK1)) saveCurrentBlock();
-                }
-
-                if (isExtInf) {
-                    let commaIdx = line.lastIndexOf(',');
-                    if (commaIdx !== -1) pendingName = line.substring(commaIdx + 1).trim();
-                } else if (titleMatch) {
-                    pendingName = titleMatch[1];
-                } else if (jsonNameMatch) {
-                    pendingName = jsonNameMatch[1];
-                }
-
-                if (foundKeyInLine && !pendingK1) {
-                    let firstKid = Object.keys(pendingAllKeys)[0];
-                    pendingK1 = firstKid;
-                    pendingK2 = pendingAllKeys[firstKid];
-                }
-
-                let cleanLine = line.replace(/="[^"]+"/g, ''); 
-                let urlMatch = cleanLine.match(/https?:\/\/[^\s|<"']+/);
+            } 
+            // 2. استخراج من صيغة الكود البرمجي (الآن يدعم k1 و k2)
+            else if (line.includes('url:') && (line.includes('name:') || line.includes('{'))) {
+                const nameMatch = line.match(/name:\s*["']([^"']+)["']/i);
+                const urlMatch = line.match(/url:\s*["']([^"']+)["']/i);
+                const k1Match = line.match(/k1:\s*["']([^"']+)["']/i);
+                const k2Match = line.match(/k2:\s*["']([^"']+)["']/i);
                 
                 if (urlMatch) {
-                    let url = urlMatch[0];
-                    let urlLower = url.toLowerCase();
-                    if (urlLower.includes('.mpd') || urlLower.includes('.m3u8') || urlLower.includes('.ts') || urlLower.includes('.m3u')) {
-                        if (!pendingUrls.includes(url)) pendingUrls.push(url);
-                    }
-                }
-            }
-            
-            saveCurrentBlock();
-
-            if (extractedChannels.length === 0) {
-                const globalUrls = rawText.match(/https?:\/\/[^\s|<"']+/g);
-                const globalKeys = rawText.match(/\b([a-fA-F0-9]{32})\b/g);
-                if (globalUrls) {
-                    let keyIndex = 0;
-                    globalUrls.forEach((u) => {
-                        let urlLower = u.toLowerCase();
-                        if (urlLower.includes('.mpd') || urlLower.includes('.m3u8') || urlLower.includes('.ts') || urlLower.includes('.m3u')) {
-                            let isM3u8Fallback = urlLower.includes('.m3u8') || urlLower.includes('.ts') || urlLower.includes('.m3u');
-                            let k1 = isM3u8Fallback ? "" : (globalKeys && globalKeys[keyIndex] ? globalKeys[keyIndex] : '');
-                            let k2 = isM3u8Fallback ? "" : (globalKeys && globalKeys[keyIndex + 1] ? globalKeys[keyIndex + 1] : '');
-                            
-                            let fallbackAllKeys = {};
-                            if (k1 && k2) fallbackAllKeys[k1] = k2;
-
-                            extractedChannels.push({
-                                name: `قناة مستخرجة ${extractedChannels.length + 1}`, url: u, k1: k1, k2: k2, allKeys: fallbackAllKeys
-                            });
-                            if(!isM3u8Fallback && globalKeys) keyIndex += 2;
-                        }
-                    });
-                }
-            }
-
-            filterByFormat('all');
-            if (extractedChannels.length > 0) selectChannel(0);
-        }
-
-        function renderPlaylistUI() {
-            const container = document.getElementById('playlistContainer');
-            const searchInput = document.getElementById('searchInput');
-            const listCount = document.getElementById('listCount');
-            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            let mpdCount = 0, m3u8Count = 0, tsCount = 0;
-            
-            extractedChannels.forEach(ch => {
-                let urlLower = ch.url.toLowerCase();
-                if (urlLower.includes('.mpd')) mpdCount++;
-                else if (urlLower.includes('.m3u8') || urlLower.includes('.m3u')) m3u8Count++;
-                else if (urlLower.includes('.ts')) tsCount++;
-            });
-
-            document.getElementById('count-all').innerText = extractedChannels.length;
-            document.getElementById('count-mpd').innerText = mpdCount;
-            document.getElementById('count-m3u8').innerText = m3u8Count;
-            document.getElementById('count-ts').innerText = tsCount;
-
-            let displayedChannels = extractedChannels.filter(ch => {
-                if (currentFilter !== 'all') {
-                    let urlLower = ch.url.toLowerCase();
-                    if (currentFilter === 'mpd' && !urlLower.includes('.mpd')) return false;
-                    if (currentFilter === 'm3u8' && !(urlLower.includes('.m3u8') || urlLower.includes('.m3u'))) return false;
-                    if (currentFilter === 'ts' && !urlLower.includes('.ts')) return false;
-                }
-                if (searchTerm && !ch.name.toLowerCase().includes(searchTerm)) return false;
-                return true;
-            });
-
-            if(listCount) {
-                listCount.innerText = extractedChannels.length > 0 ? displayedChannels.length : 0;
-            }
-
-            let html = '';
-
-            if (extractedChannels.length === 0) {
-                html = `<div style="color: #ff4d4d; text-align: center; font-size: 12px; margin-top: 20px;">لم يتم العثور على روابط بث صالحة!</div>`;
-            } else if (displayedChannels.length === 0) {
-                html = `<div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">لا توجد قنوات بهذه المعايير</div>`;
-            } else {
-                displayedChannels.forEach((ch) => {
-                    let originalIndex = extractedChannels.indexOf(ch);
-                    html += `
-                    <div class="playlist-item" id="ch-item-${originalIndex}">
-                        <div class="ch-name" onclick="selectChannel(${originalIndex})" title="${ch.name}">${originalIndex + 1}. ${ch.name}</div>
-                        <div class="ch-actions">
-                            <button class="icon-btn" onclick="copyExtCode(${originalIndex}, event)" title="نسخ كود الإضافة للكود">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                            </button>
-                            <button class="icon-btn" onclick="copyLink(${originalIndex}, event)" title="نسخ الرابط المباشر">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                            </button>
-                        </div>
-                    </div>`;
-                });
-            }
-
-            container.innerHTML = html;
-        }
-
-        function selectChannel(idx) {
-            const ch = extractedChannels[idx];
-            document.getElementById('streamUrl').value = ch.url;
-            document.getElementById('keyId').value = ch.k1;
-            document.getElementById('keyVal').value = ch.k2;
-
-            document.querySelectorAll('.playlist-item').forEach((el) => {
-                if(el.id === `ch-item-${idx}`) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-
-            testStream();
-        }
-
-        function playNextChannel() {
-            let activeEl = document.querySelector('.playlist-item.active');
-            if (!activeEl) return;
-            let displayedItems = Array.from(document.querySelectorAll('.playlist-item'));
-            let activeListIndex = displayedItems.findIndex(el => el.id === activeEl.id);
-            if (activeListIndex !== -1 && activeListIndex < displayedItems.length - 1) {
-                let nextIdx = parseInt(displayedItems[activeListIndex + 1].id.replace('ch-item-', ''));
-                selectChannel(nextIdx);
-                displayedItems[activeListIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        function playPrevChannel() {
-            let activeEl = document.querySelector('.playlist-item.active');
-            if (!activeEl) return;
-            let displayedItems = Array.from(document.querySelectorAll('.playlist-item'));
-            let activeListIndex = displayedItems.findIndex(el => el.id === activeEl.id);
-            if (activeListIndex > 0) {
-                let prevIdx = parseInt(displayedItems[activeListIndex - 1].id.replace('ch-item-', ''));
-                selectChannel(prevIdx);
-                displayedItems[activeListIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        function clearAll() {
-            document.getElementById('autoInput').value = '';
-            document.getElementById('streamUrl').value = '';
-            document.getElementById('keyId').value = '';
-            document.getElementById('keyVal').value = '';
-            document.getElementById('searchInput').value = '';
-            
-            extractedChannels = [];
-            filterByFormat('all'); 
-            
-            document.getElementById('playlistContainer').innerHTML = `<div style="color: #777; text-align: center; font-size: 12px; margin-top: 20px;">تم التطهير بنجاح</div>`;
-            document.getElementById('listCount').innerText = '0';
-
-            const container = document.getElementById('video-container');
-            container.innerHTML = '';
-            if (currentShakaPlayer) {
-                currentShakaPlayer.destroy();
-                currentShakaPlayer = null;
-            }
-        }
-
-        function testStream() {
-            const url = document.getElementById('streamUrl').value.trim();
-            const k1 = document.getElementById('keyId').value.trim();
-            const k2 = document.getElementById('keyVal').value.trim();
-            const playerType = document.getElementById('playerType').value;
-            const container = document.getElementById('video-container');
-
-            if (!url) {
-                alert("يرجى إدخال أو اختيار رابط قناة صالح أولاً!");
-                return;
-            }
-
-            container.innerHTML = '';
-            if (currentShakaPlayer) {
-                currentShakaPlayer.destroy();
-                currentShakaPlayer = null;
-            }
-
-            let currentCh = extractedChannels.find(c => c.url === url && c.k1 === k1);
-            let finalShakaKeys = {};
-            
-            if (currentCh && Object.keys(currentCh.allKeys).length > 0) {
-                finalShakaKeys = currentCh.allKeys;
-            } else if (k1 && k2) {
-                finalShakaKeys[k1] = k2;
-            }
-
-            if (playerType === 'jw') {
-                container.innerHTML = '<div id="jw-player" style="width:100%; height:100%;"></div>';
-                
-                let setupConfig = {
-                    file: url,
-                    type: url.indexOf('.m3u8') !== -1 || url.indexOf('.ts') !== -1 ? 'hls' : 'dash',
-                    width: "100%", height: "100%", autostart: true, 
-                    stretching: "uniform" 
-                };
-
-                if (k1 && k2) { setupConfig.drm = { clearkey: { keyId: k1, key: k2 } }; }
-
-                const playerInstance = jwplayer("jw-player").setup(setupConfig);
-                
-                playerInstance.on('ready', function() {
-                    let isStretched = false;
-                    const diagonalCutArrow = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgMTBsNy03bS02IDBoNnY2bS0xMSA1bC03IDdtNiAwSDN2LTYiLz48L3N2Zz4=";
+                    let stationObj = { 
+                        name: nameMatch ? nameMatch[1].trim() : `رابط مستخرج ${stations.length + 1}`, 
+                        url: urlMatch[1].trim() 
+                    };
                     
-                    playerInstance.addButton(
-                        diagonalCutArrow, "توسيع/تضييق الصورة", 
-                        function() {
-                            if (!isStretched) { playerInstance.setConfig({ stretching: "exactfit" }); isStretched = true; } 
-                            else { playerInstance.setConfig({ stretching: "uniform" }); isStretched = false; }
-                        }, "stretch-button"
-                    );
-                });
-
-            } else if (playerType === 'shaka') {
-                container.innerHTML = `
-                    <div id="shaka-ui-container" dir="ltr" style="width: 100%; height: 100%; position: relative;">
-                        <video id="shaka-video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
-                    </div>
-                `;
-                const videoElement = document.getElementById('shaka-video');
-                const shakaContainer = document.getElementById('shaka-ui-container');
-                
-                currentShakaPlayer = new shaka.Player(videoElement);
-                const ui = new shaka.ui.Overlay(currentShakaPlayer, shakaContainer, videoElement);
-
-                if (Object.keys(finalShakaKeys).length > 0) {
-                    currentShakaPlayer.configure({ drm: { clearKeys: finalShakaKeys } });
+                    // لو الشفرات موجودة ضيفهم للبيانات
+                    if (k1Match && k2Match) {
+                        stationObj.k1 = k1Match[1].trim();
+                        stationObj.k2 = k2Match[1].trim();
+                    }
+                    
+                    stations.push(stationObj);
+                    tempName = '';
                 }
-
-                currentShakaPlayer.load(url).catch(function(error) {
-                    console.error('Error loading video', error);
-                    alert("حدث خطأ أثناء تحميل البث، تأكد من صحة الرابط ومفاتيح فك التشفير.");
-                });
+            }
+            // 3. استخراج الروابط المباشرة
+            else if (line.startsWith('http://') || line.startsWith('https://')) {
+                let finalUrl = line.split('#')[0].replace(/["',}]+$/, '').trim(); 
+                const name = tempName || `رابط مستخرج ${stations.length + 1}`;
+                stations.push({ name: name, url: finalUrl });
+                tempName = ''; 
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => { shaka.polyfill.installAll(); });
-    </script>
+        // 4. الفلتر الشامل
+        if (stations.length === 0) {
+            const urlRegex = /(https?:\/\/[^\s"'<>},]+)/g;
+            let match;
+            while ((match = urlRegex.exec(text)) !== null) {
+                let cleanUrl = match[1].replace(/["',}]+$/, '').trim();
+                stations.push({ name: `رابط مستخرج ${stations.length + 1}`, url: cleanUrl });
+            }
+        }
+
+        currentExtractedStations = stations; 
+        renderResults(stations);
+    }
+
+    function renderResults(stations) {
+        const resultsList = document.getElementById('resultsList');
+        const stationCount = document.getElementById('stationCount');
+
+        resultsList.innerHTML = '';
+        stationCount.textContent = stations.length;
+
+        if (stations.length === 0) {
+            resultsList.innerHTML = '<div class="empty-state" style="color:#ef4444;">لم يتم العثور على أي روابط صالحة. تأكد من النص المدخل.</div>';
+            return;
+        }
+
+        stations.forEach((station, index) => {
+            const item = document.createElement('div');
+            item.className = 'station-item';
+            item.id = 'station-' + index;
+            
+            const cleanUrl = station.url.replace(/"/g, '&quot;');
+            
+            // تحديد إذا كان يوجد شفرة لطباعة علامة قفل
+            const drmIcon = (station.k1 && station.k2) ? ' <i class="fas fa-lock" style="color: #f59e0b; font-size: 0.8rem;" title="قناة مشفرة"></i>' : '';
+            
+            // تحضير بارامترات النسخ
+            const k1Arg = station.k1 ? `'${station.k1}'` : 'null';
+            const k2Arg = station.k2 ? `'${station.k2}'` : 'null';
+            
+            item.innerHTML = `
+                <div class="station-info" onclick="testExtracted('${cleanUrl}', ${index})" title="تشغيل الرابط">
+                    <div class="station-name"><i class="fas fa-play-circle"></i> ${station.name}${drmIcon}</div>
+                </div>
+                <div class="station-actions">
+                    <button class="action-btn btn-secondary" onclick="copyFormat('${station.name.replace(/'/g, "\\'")}', '${cleanUrl}', ${k1Arg}, ${k2Arg})" title="نسخ كود الإضافة"><i class="fas fa-code"></i></button>
+                    <button class="action-btn btn-secondary" onclick="copyUrl('${cleanUrl}')" title="نسخ الرابط فقط"><i class="fas fa-link"></i></button>
+                </div>
+            `;
+            resultsList.appendChild(item);
+        });
+    }
+
+    function testExtracted(url, index) {
+        document.getElementById('quickUrl').value = url;
+        testQuickUrl();
+        
+        removePlayingHighlight();
+        const activeItem = document.getElementById('station-' + index);
+        if(activeItem) activeItem.classList.add('playing');
+    }
+
+    // تم تحديث الدالة لتدعم k1 و k2
+    function copyFormat(name, url, k1, k2) {
+        let format = `{ name: "${name}", url: "${url}"`;
+        if (k1 && k2 && k1 !== 'null' && k2 !== 'null') {
+            format += `, k1: "${k1}", k2: "${k2}"`;
+        }
+        format += ` },`;
+        
+        navigator.clipboard.writeText(format).then(() => {
+            alert("تم نسخ سطر الكود الجاهز للإضافة!");
+        });
+    }
+
+    function copyUrl(url) {
+        navigator.clipboard.writeText(url).then(() => {
+            alert("تم نسخ الرابط بنجاح!");
+        });
+    }
+
+    // تم تحديث الدالة لتدعم الشفرات
+    function copyAllFormats() {
+        if (currentExtractedStations.length === 0) {
+            alert("لا يوجد أي إذاعات مستخرجة لنسخها!");
+            return;
+        }
+        
+        const allCodes = currentExtractedStations.map(station => {
+            let line = `{ name: "${station.name.replace(/"/g, '\\"')}", url: "${station.url}"`;
+            if (station.k1 && station.k2) {
+                line += `, k1: "${station.k1}", k2: "${station.k2}"`;
+            }
+            line += ` },`;
+            return line;
+        }).join('\n');
+
+        navigator.clipboard.writeText(allCodes).then(() => {
+            alert(`تم نسخ أكواد ${currentExtractedStations.length} إذاعة بنجاح!`);
+        });
+    }
+</script>
 </body>
 </html>
